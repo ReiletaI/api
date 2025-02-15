@@ -3,3 +3,5 @@ uvicorn
 requests
 sqlalchemy
 python-dotenv
+openai-whisper
+python-multipart
