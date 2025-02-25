@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.endpoints import chat, transcription
+from app.api.endpoints import chat, transcription_api, transcription_local, verify_api_key
 
 app = FastAPI(
     title="ReiletAI",
@@ -12,7 +12,9 @@ app = FastAPI(
 
 # app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 # app.include_router(mode.router, prefix="/api/mode", tags=["mode"])
-app.include_router(transcription.router, prefix="/api/transcription", tags=["transcription"])
+app.include_router(transcription_local.router, prefix="/api/transcription", tags=["transcription"])
+app.include_router(transcription_api.router, prefix="/api/transcription", tags=["transcription"])
+app.include_router(verify_api_key.router, prefix="/api", tags=["utilities"])
 
 @app.get("/")
 def read_root():
