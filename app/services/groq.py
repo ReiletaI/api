@@ -1,11 +1,16 @@
 import requests
 from groq import Groq
+import base64
+import os
+import json
+import datetime
 
 class GroqService:
     def __init__(self, api_key):
         self.api_key = api_key
         self.base_url = "https://api.groq.ai"
         self._client = Groq(api_key=api_key)  # Ensure Groq class accepts api_key
+        self.recordings_path = "../../audios"  # Assuming recordings path is set here
 
     def get_response(self, query):
         headers = {
@@ -18,19 +23,65 @@ class GroqService:
         response = requests.post(f"{self.base_url}/chat", headers=headers, json=data)
         return response.json()
     
-    def transcribe(self, audio_path):
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-        }
-        with open(audio_path, "rb") as audio_file:
-            files = {"file": audio_file}
-            data = {
-                "model": "whisper-large-v3",
-                "response_format": "venbose_json",
-                "language": "en"
-            }
-            response = self._client.audio.transcriptions.create(files=files, data=data)
-            return response.model_dump_json()
+    def transcribe(self, audio_path, room_id, room_status):
+        if room_status != "Connected":
+            return {"error": "No call in progress.", "text": ""}, 400
+
+        if not audio_path:
+            return {"error": "No audio data provided."}, 400
+
+        try:
+            client = Groq(api_key=self.api_key)  # Initialize Groq client
+            audio_model = "whisper-large-v3"
+
+            # Assuming audio_path is base64 encoded
+            header, encoded = audio_path.split(",", 1)
+            audio_data = base64.b64decode(encoded)  # Decode audio data
+
+            # Create directory for recordings
+            timestamp = datetime.datetime.now().strftime('%Y%m%d')
+            folder = os.path.join(self.recordings_path, f"{timestamp}")
+
+            if not os.path.exists(folder):
+                os.makedirs(folder, exist_ok=True)
+
+            room_dir = os.path.join(folder, f"{room_id}")
+
+            if not os.path.exists(room_dir):
+                os.makedirs(room_dir, exist_ok=True)
+
+            # Naming audio and transcription files
+            filename = os.path.join(room_dir, f"chunk_{timestamp}_{room_id}.webm")
+            transcribed_audio = os.path.join(room_dir, f"Transcription_{room_id}.txt")
+
+            # Save audio chunk
+            with open(filename, "wb") as f:
+                f.write(audio_data)
+
+            # Transcription with Whisper on Groq
+            with open(filename, "rb") as audio_file:
+                translation = client.audio.translations.create(
+                    file=audio_file,
+                    model=audio_model,
+                    response_format="verbose_json",
+                )
+
+            transcribed_data = json.loads(translation.model_dump_json())
+
+            res = ""
+            with open(transcribed_audio, 'a', encoding='utf-8') as audio_text:
+                for segment in transcribed_data.get('segments', []):
+                    line = segment.get('text', '').strip()
+                    if line:
+                        audio_text.write(line + '\n')
+                        res += line + '\n'
+
+                audio_text.write('[...]' + '\n')
+                res += '[...]'
+
+            return {"message": "Audio chunk saved.", "filename": str(filename), "text": res}
+        except Exception as e:
+            return {"error": f"Error saving audio chunk: {str(e)}"}, 500
 
     def detect_vishing(self, transcription_file):
         with open(transcription_file, "r") as file:
