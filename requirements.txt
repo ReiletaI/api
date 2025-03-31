@@ -1,7 +1,14 @@
 fastapi
+fastapi[standard]
 uvicorn
 requests
 sqlalchemy
 python-dotenv
 openai-whisper
 python-multipart
+torch
+pydantic
+pydantic-settings
+pyannote.audio
+groq
+dotenv
