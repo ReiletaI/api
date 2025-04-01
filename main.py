@@ -1,6 +1,8 @@
+import torch
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import groq 
+from app.services.diarization import DiarizationService
+from app.core.config import get_settings
 
 app = FastAPI(
     title="ReiletAI",
@@ -10,22 +12,40 @@ app = FastAPI(
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
 )
+settings = get_settings()
+
+# Initialize the DiarizationService with the Hugging Face token
+diarization_service = DiarizationService(settings.HF_TOKEN)
+
+# Check if GPU is available
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()  # Clear GPU memory
+    print("GPU is available for processing.")
+else:
+    print("GPU is not available. Using CPU.")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to your needs, e.g., ["http://localhost:3000"]
+    allow_origins=["*"],  # Adjust this to your needs
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods, including OPTIONS
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Your existing routes here
+# Create a dependency function to get the diarization service
+def get_diarization_service():
+    return diarization_service
 
-# app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
-# app.include_router(mode.router, prefix="/api/mode", tags=["mode"])
-app.include_router(groq.router, prefix="/api/groq", tags=["groq"])
+# Import endpoints here (AFTER defining diarization_service)
+from app.api.endpoints import groq
+
+# Include router
+app.include_router(groq.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to ReiletAI API"}
+
+# Override the dependency
+app.dependency_overrides[groq.get_diarization_service] = get_diarization_service
