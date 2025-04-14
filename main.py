@@ -24,10 +24,10 @@ if torch.cuda.is_available():
 else:
     print("GPU is not available. Using CPU.")
 
-# Add CORS middleware
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to your needs
+    allow_origins=["*"],  # In production, replace with your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,10 +38,11 @@ def get_diarization_service():
     return diarization_service
 
 # Import endpoints here (AFTER defining diarization_service)
-from app.api.endpoints import groq
+from app.api.endpoints import groq, data
 
 # Include router
 app.include_router(groq.router, prefix="/api/v1")
+app.include_router(data.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
