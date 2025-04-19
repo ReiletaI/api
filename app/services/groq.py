@@ -286,7 +286,7 @@ class GroqService:
             """
         
         completion = client.chat.completions.create(
-            model="deepseek-r1-distill-llama-70b",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
