@@ -300,8 +300,7 @@ class GroqService:
             temperature=0,
             max_completion_tokens=1024,
             top_p=0.95,
-            stream=False,
-            reasoning_format="hidden"  # Changed based on server.py
+            stream=False
         )
 
         output = completion.choices[0].message.content
