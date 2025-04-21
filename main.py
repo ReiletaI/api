@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.diarization import DiarizationService
 from app.core.config import get_settings
+from app.database import init_db
+
 
 app = FastAPI(
     title="ReiletAI",
@@ -14,6 +16,9 @@ app = FastAPI(
 )
 settings = get_settings()
 
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 # Initialize the DiarizationService with the Hugging Face token
 diarization_service = DiarizationService(settings.HF_TOKEN)
 

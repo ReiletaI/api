@@ -1,5 +1,5 @@
-from .call_analysis import CallAnalysis
-from .dashboard_stats import DashboardStats
-from .monthly_data import MonthlyData
+from .dashboard_stats import DashboardStatsDB
+from .call_analysis import CallAnalysisDB
+from .monthly_data import MonthlyDataDB
 
-__all__ = ["CallAnalysis", "DashboardStats", "MonthlyData"]
+__all__ = ["DashboardStatsDB", "CallAnalysisDB", "MonthlyDataDB"]

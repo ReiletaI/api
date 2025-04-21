@@ -29,6 +29,7 @@ COPY . .
 
 # Make sure data folder exists
 RUN mkdir -p /app/data
+VOLUME ["/app/data"]
 
 
 # Expose FastAPI port
