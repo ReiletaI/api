@@ -29,6 +29,7 @@ COPY . .
 # Assurez-vous que votre application écrit la BDD et les audios ici.
 # Par exemple, le chemin de la BDD pourrait être /app/data/database.db
 RUN mkdir -p /app/data
+VOLUME ["/app/data"]
 
 # Exposer le port sur lequel FastAPI écoute
 EXPOSE 8000
