@@ -31,9 +31,7 @@ COPY . .
 RUN mkdir -p /app/data
 VOLUME ["/app/data"]
 
+# Exposer le port sur lequel FastAPI écoute
+EXPOSE 8123
 
-# Expose FastAPI port
-EXPOSE 8000
-
-# Run the app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8123"]
