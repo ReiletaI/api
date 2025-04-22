@@ -12,17 +12,14 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
-    python3-venv \
     ffmpeg \
     libsox-fmt-mp3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create venv & install Python deps
+# Install Python deps
 WORKDIR /app
 COPY requirements.txt ./
-RUN python3 -m venv /opt/venv
-RUN /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app source code
 COPY . .
